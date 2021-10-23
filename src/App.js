@@ -23,28 +23,36 @@ class App extends Component {
         })
         .catch(err => console.log('Error:', err));
     }
-
-    if (prevState.page !== this.state.page && this.state.page !== 1) {
-      return fetchImages(this.state.searchValue, this.state.page)
-        .then(data => {
-          this.setState(prevState => ({
-            images: [...prevState.images, ...data],
-          }));
-        })
-
-        .catch(err => console.log('Error:', err));
-    }
   }
+
+  fetch = () => {
+    const { searchValue, page } = this.state;
+    this.setState({ loading: true });
+    return fetchImages(searchValue, page)
+      .then(data => {
+        this.setState(prevState => ({
+          images: [...prevState.images, ...data],
+          page: prevState.page + 1,
+        }));
+      })
+      .finally(() => this.setState({ loading: false }));
+  };
 
   handleSubmit = searchValue => {
     this.setState({ searchValue });
   };
 
-  loadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  scrollWindow = () => {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: 'smooth',
+    });
+  };
+
+  loadMore = () => {
+    this.setState({ loading: true });
+    this.fetch().then(() => {
+      this.scrollWindow();
     });
   };
 
